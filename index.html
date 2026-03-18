@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concept Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #191919;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .widget {
+      width: 100%;
+      max-width: 640px;
+      background: #191919;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .header-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.7rem;
+      color: #a09a92;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      margin-bottom: 1.1rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.85rem;
+    }
+
+    .idea-input {
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.82rem;
+      color: #e8e4df;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .idea-input::placeholder {
+      color: #5a5650;
+    }
+
+    .idea-input:focus {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .tag-input {
+      width: 90px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.7rem;
+      color: #e8e4df;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.5rem 0.6rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .tag-input::placeholder {
+      color: #5a5650;
+    }
+
+    .tag-input:focus {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .add-btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.72rem;
+      color: #a09a92;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.5rem 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      letter-spacing: 0.02em;
+    }
+
+    .add-btn:hover {
+      color: #d0cbc5;
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .search-row {
+      margin-bottom: 0.85rem;
+    }
+
+    .search-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.78rem;
+      color: #e8e4df;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .search-input::placeholder {
+      color: #5a5650;
+    }
+
+    .search-input:focus {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
+      min-height: 0;
+    }
+
+    .filter-row:empty {
+      margin-bottom: 0;
+    }
+
+    .filter-tag {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #7a756e;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .filter-tag:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #a09a92;
+    }
+
+    .filter-tag.active {
+      background: rgba(255, 255, 255, 0.09);
+      color: #c0bbb4;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .ideas-list {
+      max-height: 420px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #2a2725 #191919;
+    }
+
+    .ideas-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .ideas-list::-webkit-scrollbar-track {
+      background: #191919;
+    }
+
+    .ideas-list::-webkit-scrollbar-thumb {
+      background: #2a2725;
+      border-radius: 2px;
+    }
+
+    .idea-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: fadeSlideIn 0.22s ease forwards;
+    }
+
+    @keyframes fadeSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .idea-text {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.85rem;
+      color: #d0cbc5;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .delete-btn {
+      font-size: 0.75rem;
+      color: #4a4640;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 0.1rem;
+      line-height: 1;
+      transition: color 0.15s ease;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .delete-btn:hover {
+      color: #8a857e;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tag-badge {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #7a756e;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .tag-badge:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #a09a92;
+    }
+
+    .timestamp {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.6rem;
+      color: #5a5650;
+    }
+
+    .empty-state {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.78rem;
+      color: #4a4640;
+      text-align: center;
+      padding: 2rem 0 1.5rem;
+      font-style: italic;
+    }
+
+    .count-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.6rem;
+      color: #4a4640;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget">
+    <div class="header-label">Concept Map</div>
+
+    <div class="input-row">
+      <input
+        class="idea-input"
+        id="ideaInput"
+        type="text"
+        placeholder="Capture an idea..."
+        autocomplete="off"
+      />
+      <input
+        class="tag-input"
+        id="tagInput"
+        type="text"
+        placeholder="tag"
+        autocomplete="off"
+      />
+      <button class="add-btn" id="addBtn">Add</button>
+    </div>
+
+    <div class="search-row">
+      <input
+        class="search-input"
+        id="searchInput"
+        type="text"
+        placeholder="Search ideas..."
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="filter-row" id="filterRow"></div>
+
+    <div class="count-label" id="countLabel"></div>
+
+    <div class="ideas-list" id="ideasList"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'concept_map_ideas';
+
+    let ideas = [];
+    let activeFilter = null;
+    let searchQuery = '';
+
+    function loadIdeas() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        ideas = stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        ideas = [];
+      }
+    }
+
+    function saveIdeas() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ideas));
+    }
+
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function addIdea(text, tag) {
+      const trimmedText = text.trim();
+      if (!trimmedText) return;
+      const trimmedTag = tag.trim().toLowerCase().replace(/\s+/g, '-') || null;
+      const idea = {
+        id: generateId(),
+        text: trimmedText,
+        tag: trimmedTag,
+        createdAt: Date.now()
+      };
+      ideas.unshift(idea);
+      saveIdeas();
+      render();
+    }
+
+    function deleteIdea(id) {
+      ideas = ideas.filter(i => i.id !== id);
+      saveIdeas();
+      render();
+    }
+
+    function relativeTime(ts) {
+      const now = Date.now();
+      const diff = now - ts;
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days === 1) return 'yesterday';
+      if (days < 7) return `${days}d ago`;
+      if (days < 30) return `${Math.floor(days / 7)}w ago`;
+      return `${Math.floor(days / 30)}mo ago`;
+    }
+
+    function getAllTags() {
+      const tags = new Set();
+      ideas.forEach(i => { if (i.tag) tags.add(i.tag); });
+      return Array.from(tags).sort();
+    }
+
+    function getFilteredIdeas() {
+      return ideas.filter(idea => {
+        const matchesTag = !activeFilter || idea.tag === activeFilter;
+        const matchesSearch = !searchQuery ||
+          idea.text.toLowerCase().includes(searchQuery) ||
+          (idea.tag && idea.tag.includes(searchQuery));
+        return matchesTag && matchesSearch;
+      });
+    }
+
+    function renderFilters() {
+      const filterRow = document.getElementById('filterRow');
+      const tags = getAllTags();
+      filterRow.innerHTML = '';
+
+      tags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-tag' + (activeFilter === tag ? ' active' : '');
+        btn.textContent = tag;
+        btn.addEventListener('click', () => {
+          activeFilter = activeFilter === tag ? null : tag;
+          render();
+        });
+        filterRow.appendChild(btn);
+      });
+    }
+
+    function renderIdeas() {
+      const list = document.getElementById('ideasList');
+      const countLabel = document.getElementById('countLabel');
+      const filtered = getFilteredIdeas();
+
+      list.innerHTML = '';
+
+      if (filtered.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = ideas.length === 0
+          ? 'No ideas yet — start capturing.'
+          : 'No matches found.';
+        list.appendChild(empty);
+        countLabel.textContent = '';
+        return;
+      }
+
+      const total = filtered.length;
+      countLabel.textContent = `${total} idea${total !== 1 ? 's' : ''}${activeFilter ? ' in #' + activeFilter : ''}${searchQuery ? ' matching "' + searchQuery + '"' : ''}`;
+
+      filtered.forEach((idea, index) => {
+        const card = document.createElement('div');
+        card.className = 'idea-card';
+        card.style.animationDelay = `${index * 30}ms`;
+
+        const cardTop = document.createElement('div');
+        cardTop.className = 'card-top';
+
+        const text = document.createElement('div');
+        text.className = 'idea-text';
+        text.textContent = idea.text;
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.innerHTML = '&#x2715;';
+        delBtn.title = 'Delete';
+        delBtn.addEventListener('click', () => deleteIdea(idea.id));
+
+        cardTop.appendChild(text);
+        cardTop.appendChild(delBtn);
+
+        const meta = document.createElement('div');
+        meta.className = 'card-meta';
+
+        if (idea.tag) {
+          const badge = document.createElement('span');
+          badge.className = 'tag-badge';
+          badge.textContent = idea.tag;
+          badge.title = activeFilter === idea.tag ? 'Clear filter' : `Filter by #${idea.tag}`;
+          badge.addEventListener('click', () => {
+            activeFilter = activeFilter === idea.tag ? null : idea.tag;
+            render();
+          });
+          meta.appendChild(badge);
+        }
+
+        const ts = document.createElement('span');
+        ts.className = 'timestamp';
+        ts.textContent = relativeTime(idea.createdAt);
+        meta.appendChild(ts);
+
+        card.appendChild(cardTop);
+        card.appendChild(meta);
+        list.appendChild(card);
+      });
+    }
+
+    function render() {
+      renderFilters();
+      renderIdeas();
+    }
+
+    // Refresh relative timestamps every minute
+    setInterval(render, 60000);
+
+    // Event listeners
+    document.getElementById('addBtn').addEventListener('click', () => {
+      const text = document.getElementById('ideaInput').value;
+      const tag = document.getElementById('tagInput').value;
+      addIdea(text, tag);
+      document.getElementById('ideaInput').value = '';
+      document.getElementById('tagInput').value = '';
+      document.getElementById('ideaInput').focus();
+    });
+
+    document.getElementById('ideaInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const text = document.getElementById('ideaInput').value;
+        const tag = document.getElementById('tagInput').value;
+        addIdea(text, tag);
+        document.getElementById('ideaInput').value = '';
+        document.getElementById('tagInput').value = '';
+      }
+    });
+
+    document.getElementById('tagInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const text = document.getElementById('ideaInput').value;
+        const tag = document.getElementById('tagInput').value;
+        addIdea(text, tag);
+        document.getElementById('ideaInput').value = '';
+        document.getElementById('tagInput').value = '';
+        document.getElementById('ideaInput').focus();
+      }
+    });
+
+    document.getElementById('searchInput').addEventListener('input', e => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      render();
+    });
+
+    // Init
+    loadIdeas();
+    render();
+  </script>
+</body>
+</html>
