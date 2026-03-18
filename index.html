@@ -572,12 +572,20 @@
           body: JSON.stringify(body)
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || `HTTP ${res.status}`);
         }
 
         feedbackEl.textContent = 'Sent';
         feedbackEl.classList.add('success');
+
+        // Open the created page in a new tab
+        if (data.url) {
+          window.open(data.url, '_blank');
+        }
+
         setTimeout(() => {
           feedbackEl.textContent = '';
           feedbackEl.className = 'card-feedback';
