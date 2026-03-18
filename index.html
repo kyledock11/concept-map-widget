@@ -551,7 +551,8 @@
       const title = idea.text.length > 100 ? idea.text.slice(0, 100) : idea.text;
 
       const properties = {
-        Category: { type: 'multi_select', values: ['Philosophy'] }
+        Area: { type: 'multi_select', values: ['Philosophy'] },
+        Type: { type: 'select', value: 'Idea' }
       };
       if (idea.tag) {
         properties.Tags = { type: 'multi_select', values: [idea.tag] };
