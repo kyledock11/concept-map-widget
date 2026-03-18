@@ -302,6 +302,85 @@
       margin-bottom: 0.6rem;
       letter-spacing: 0.03em;
     }
+
+    /* Card action buttons row */
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .copy-btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.55rem;
+      color: #5a5650;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      color: #8a857e;
+    }
+
+    .notion-btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-radius: 6px;
+      padding: 0.18rem 0.45rem;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s ease;
+      line-height: 1.4;
+    }
+
+    .notion-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .notion-btn-journal {
+      background: rgba(126, 184, 208, 0.12);
+      border: 1px solid rgba(126, 184, 208, 0.2);
+      color: #7eb8d0;
+    }
+
+    .notion-btn-journal:hover:not(:disabled) {
+      background: rgba(126, 184, 208, 0.2);
+    }
+
+    .notion-btn-library {
+      background: rgba(110, 192, 122, 0.12);
+      border: 1px solid rgba(110, 192, 122, 0.2);
+      color: #6ec07a;
+    }
+
+    .notion-btn-library:hover:not(:disabled) {
+      background: rgba(110, 192, 122, 0.2);
+    }
+
+    .card-feedback {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.55rem;
+      margin-left: 0.15rem;
+    }
+
+    .card-feedback.success {
+      color: #6ec07a;
+    }
+
+    .card-feedback.error {
+      color: #d07e7e;
+    }
   </style>
 </head>
 <body>
@@ -344,7 +423,12 @@
   </div>
 
   <script>
+    const CORS_PROXY = 'https://cors-proxy.kyle-d7d.workers.dev';
+
     const STORAGE_KEY = 'concept_map_ideas';
+
+    const DB_JOURNAL = '3226a121-2986-816e-a777-da5ab00e6126';
+    const DB_LIBRARY = '3226a121-2986-817a-a9b7-d5ce8fe7d290';
 
     let ideas = [];
     let activeFilter = null;
@@ -437,6 +521,78 @@
       });
     }
 
+    async function copyIdeaText(text, btn) {
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      } catch (e) {
+        // Fallback for browsers without clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      }
+    }
+
+    async function sendToNotion(idea, databaseId, btn, feedbackEl) {
+      btn.disabled = true;
+      feedbackEl.textContent = '';
+      feedbackEl.className = 'card-feedback';
+
+      const title = idea.text.length > 100 ? idea.text.slice(0, 100) : idea.text;
+
+      const properties = {
+        Category: { type: 'multi_select', values: ['Philosophy'] }
+      };
+      if (idea.tag) {
+        properties.Tags = { type: 'multi_select', values: [idea.tag] };
+      }
+
+      const body = {
+        database: databaseId,
+        title,
+        content: idea.text,
+        properties
+      };
+
+      try {
+        const res = await fetch(`${CORS_PROXY}/?mode=notion`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        feedbackEl.textContent = 'Sent';
+        feedbackEl.classList.add('success');
+        setTimeout(() => {
+          feedbackEl.textContent = '';
+          feedbackEl.className = 'card-feedback';
+        }, 2500);
+      } catch (err) {
+        feedbackEl.textContent = 'Error';
+        feedbackEl.classList.add('error');
+        setTimeout(() => {
+          feedbackEl.textContent = '';
+          feedbackEl.className = 'card-feedback';
+        }, 2500);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     function renderIdeas() {
       const list = document.getElementById('ideasList');
       const countLabel = document.getElementById('countLabel');
@@ -463,6 +619,7 @@
         card.className = 'idea-card';
         card.style.animationDelay = `${index * 30}ms`;
 
+        // --- Top row: text + delete ---
         const cardTop = document.createElement('div');
         cardTop.className = 'card-top';
 
@@ -479,6 +636,7 @@
         cardTop.appendChild(text);
         cardTop.appendChild(delBtn);
 
+        // --- Meta row: tag badge + timestamp ---
         const meta = document.createElement('div');
         meta.className = 'card-meta';
 
@@ -499,8 +657,38 @@
         ts.textContent = relativeTime(idea.createdAt);
         meta.appendChild(ts);
 
+        // --- Actions row: copy + send to journal + send to library + feedback ---
+        const actions = document.createElement('div');
+        actions.className = 'card-actions';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = 'Copy';
+        copyBtn.title = 'Copy to clipboard';
+        copyBtn.addEventListener('click', () => copyIdeaText(idea.text, copyBtn));
+
+        const journalBtn = document.createElement('button');
+        journalBtn.className = 'notion-btn notion-btn-journal';
+        journalBtn.textContent = 'Send to Journal';
+
+        const libraryBtn = document.createElement('button');
+        libraryBtn.className = 'notion-btn notion-btn-library';
+        libraryBtn.textContent = 'Send to Library';
+
+        const feedback = document.createElement('span');
+        feedback.className = 'card-feedback';
+
+        journalBtn.addEventListener('click', () => sendToNotion(idea, DB_JOURNAL, journalBtn, feedback));
+        libraryBtn.addEventListener('click', () => sendToNotion(idea, DB_LIBRARY, libraryBtn, feedback));
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(journalBtn);
+        actions.appendChild(libraryBtn);
+        actions.appendChild(feedback);
+
         card.appendChild(cardTop);
         card.appendChild(meta);
+        card.appendChild(actions);
         list.appendChild(card);
       });
     }
