@@ -548,6 +548,9 @@
       feedbackEl.textContent = '';
       feedbackEl.className = 'card-feedback';
 
+      // Open tab immediately (sync with user click) to avoid popup blocker
+      const newTab = window.open('about:blank', '_blank');
+
       const title = idea.text.length > 100 ? idea.text.slice(0, 100) : idea.text;
 
       const properties = {
@@ -581,9 +584,9 @@
         feedbackEl.textContent = 'Sent';
         feedbackEl.classList.add('success');
 
-        // Open the created page in a new tab
-        if (data.url) {
-          window.open(data.url, '_blank');
+        // Redirect the pre-opened tab to the Notion page
+        if (data.url && newTab) {
+          newTab.location.href = data.url;
         }
 
         setTimeout(() => {
@@ -591,6 +594,7 @@
           feedbackEl.className = 'card-feedback';
         }, 2500);
       } catch (err) {
+        if (newTab) newTab.close();
         feedbackEl.textContent = 'Error';
         feedbackEl.classList.add('error');
         setTimeout(() => {
