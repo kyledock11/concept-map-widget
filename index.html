@@ -40,14 +40,14 @@
       color: #a09a92;
       text-transform: uppercase;
       letter-spacing: 0.25em;
-      margin-bottom: 1.1rem;
+      margin-bottom: 0.75rem;
     }
 
     .input-row {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       align-items: center;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.5rem;
     }
 
     .idea-input {
@@ -59,7 +59,7 @@
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 6px;
-      padding: 0.5rem 0.75rem;
+      padding: 0.4rem 0.65rem;
       outline: none;
       transition: border-color 0.15s ease;
     }
@@ -81,7 +81,7 @@
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 6px;
-      padding: 0.5rem 0.6rem;
+      padding: 0.4rem 0.5rem;
       outline: none;
       transition: border-color 0.15s ease;
     }
@@ -102,7 +102,7 @@
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 6px;
-      padding: 0.5rem 0.8rem;
+      padding: 0.4rem 0.7rem;
       cursor: pointer;
       white-space: nowrap;
       transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
@@ -115,8 +115,31 @@
       background: rgba(255, 255, 255, 0.07);
     }
 
+    .tools-toggle {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 0.6rem;
+      color: #5a5650;
+      cursor: pointer;
+      margin-bottom: 0.4rem;
+      transition: color 0.15s ease;
+      user-select: none;
+    }
+
+    .tools-toggle:hover { color: #8a857e; }
+
+    .tools-area {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+
+    .tools-area.open {
+      max-height: 120px;
+    }
+
     .search-row {
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.5rem;
     }
 
     .search-input {
@@ -145,7 +168,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.35rem;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.5rem;
       min-height: 0;
     }
 
@@ -436,17 +459,19 @@
       <button class="add-btn" id="addBtn">Add</button>
     </div>
 
-    <div class="search-row">
-      <input
-        class="search-input"
-        id="searchInput"
-        type="text"
-        placeholder="Search ideas..."
-        autocomplete="off"
-      />
+    <div class="tools-toggle" id="toolsToggle">▸ Search & Filter</div>
+    <div class="tools-area" id="toolsArea">
+      <div class="search-row">
+        <input
+          class="search-input"
+          id="searchInput"
+          type="text"
+          placeholder="Search ideas..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="filter-row" id="filterRow"></div>
     </div>
-
-    <div class="filter-row" id="filterRow"></div>
 
     <div class="count-label" id="countLabel"></div>
 
@@ -746,6 +771,14 @@
 
     // Refresh relative timestamps every minute
     setInterval(render, 60000);
+
+    // Tools toggle
+    document.getElementById('toolsToggle').addEventListener('click', () => {
+      const area = document.getElementById('toolsArea');
+      const toggle = document.getElementById('toolsToggle');
+      area.classList.toggle('open');
+      toggle.textContent = area.classList.contains('open') ? '▾ Search & Filter' : '▸ Search & Filter';
+    });
 
     // Event listeners
     document.getElementById('addBtn').addEventListener('click', () => {
